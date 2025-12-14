@@ -62,7 +62,7 @@
     <ClCompile Include="RenderSVG.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ShapeSVG.cpp">
+    <ClCompile Include="ElementSVG.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="StrokeSVG.cpp">
@@ -72,6 +72,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TextSVG.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GroupSVG.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PathSVG.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DefinitionsSVG.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -127,7 +136,7 @@
     <ClInclude Include="Resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ShapeSVG.h">
+    <ClInclude Include="ElementSVG.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="StrokeSVG.h">
@@ -140,6 +149,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TextSVG.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GroupSVG.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PathSVG.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DefinitionsSVG.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

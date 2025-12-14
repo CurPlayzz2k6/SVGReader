@@ -14,8 +14,8 @@ private:
 
 public:
 	LineSVG();
-	void read(xml_node<>* node);
-	void draw(Graphics& graphics) override;
+	void read(xml_node<>* node) override;
+	void draw(Graphics& graphics, const DefinitionsSVG& defs) override;
 	~LineSVG();
 };
 #endif LINESVG_H

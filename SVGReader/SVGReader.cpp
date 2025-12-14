@@ -27,8 +27,8 @@
 #include "PolylineSVG.h"
 #include "EllipseSVG.h"
 #include "TextSVG.h"
-#include "ParserSVG.h"
 #include "RenderSVG.h"
+#include "GroupSVG.h"
 
 using namespace Gdiplus;
 using namespace rapidxml;
@@ -72,7 +72,28 @@ void InitializeGDIPlus();
 void ShutdownGDIPlus();
 bool OpenFile(HWND hwnd);
 
+//void EnableConsole()
+//{
+//	// Cấp phát một console mới cho tiến trình
+//	if (AllocConsole())
+//	{
+//		// Gắn luồng Output (stdout, stderr) vào console mới
+//		FILE* pConsoleOut;
+//		freopen_s(&pConsoleOut, "CONOUT$", "w", stdout);
+//		freopen_s(&pConsoleOut, "CONOUT$", "w", stderr);
+//
+//		// Gắn luồng Input (stdin) vào console mới
+//		FILE* pConsoleIn;
+//		freopen_s(&pConsoleIn, "CONIN$", "r", stdin);
+//
+//		// Đồng bộ hóa các luồng C++ (std::cout, std::cin) với các luồng C
+//		std::ios::sync_with_stdio(true);
+//	}
+//}
+
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR pCmdLine, int nCmdShow) {
+
+	//EnableConsole();
 
 	InitializeGDIPlus();
 
@@ -322,6 +343,7 @@ void InitializeGDIPlus() {
 
 // Tắt Application
 void ShutdownGDIPlus() {
+	screen.clearAll();
 	GdiplusShutdown(gdiplusToken);
 }
 
