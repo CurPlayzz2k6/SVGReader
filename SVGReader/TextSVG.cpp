@@ -1,146 +1,176 @@
 #include "TextSVG.h"
+#include "DefinitionsSVG.h" // Include để nhận diện kiểu DefinitionsSVG
+#include <iostream>
+#include <algorithm>
 
 using namespace Gdiplus;
 using namespace std;
 
-TextSVG::TextSVG() {
-	this->x = 0;
-	this->y = 0;
-	this->rotate = 0;
-	this->fontSize = 0;
-	this->fontStyle = "normal";
-	this->fontFamily = "Times New Roman";
+wstring getValidFontFamily(const string& requestedFamily) {
+    wstring wRequestedFamily = ConvertStringToWstring(requestedFamily);
+    FontFamily testFont(wRequestedFamily.c_str());
+
+    WCHAR outputName[LF_FACESIZE];
+    if (testFont.GetFamilyName(outputName) == Ok) {
+        if (wcscmp(wRequestedFamily.c_str(), outputName) == 0) {
+            return wRequestedFamily;
+        }
+    }
+    return L"Times New Roman";
 }
 
+StringAlignment getValidAlignment(const string& anchor) {
+    if (anchor == "middle") 
+        return StringAlignmentCenter;
+    if (anchor == "end") 
+        return StringAlignmentFar;
+    return StringAlignmentNear;
+}
+
+TextSVG::TextSVG() {
+    this->x = 0;
+    this->y = 0;
+    this->rotate = 0;
+    this->fontSize = 36.0f;
+    this->fontFamily = "Times New Roman";
+    this->fontStyle = "normal";
+    this->text = "";
+    this->textAnchor = "start";
+}
 
 void TextSVG::read(xml_node<>* node) {
-	string str(node->value());
-	text = str;
-	for (xml_attribute<>* attr = node->first_attribute(); attr; attr = attr->next_attribute()) {
-		string type(attr->name());
-		if (type == "x")
-			x = stof(attr->value());
-		else if (type == "y")
-			y = stof(attr->value());
-		else if (type == "rotate")
-			rotate = stof(attr->value());
-		else if (type == "font-family")
-			fontFamily = attr->value();
-		else if (type == "font-style")
-			fontStyle = attr->value();
-		else if (type == "font-size")
-			fontSize = stof(attr->value());
-		else if (type == "opacity")
-			opacity.setOpacity(stof(attr->value()));
-		else if (type == "fill")
-			fill.setFillColor(getRGB(attr->value()));
-		else if (type == "fill-opacity")
-			fill.setFillOpacity(stof(attr->value()));
-		else if (type == "stroke")
-			stroke.setStrokeColor(getRGB(attr->value()));
-		else if (type == "stroke-width")
-			stroke.setStrokeWidth(stof(attr->value()));
-		else if (type == "stroke-opacity")
-			stroke.setStrokeOpacity(stof(attr->value()));
-	}
+    if (node->value()) {
+        string str(node->value());
+        text = "";
+        bool lastIsSpace = false;
+        for (char c : str) {
+            if (c == '\n' || c == '\r' || c == '\t') 
+                c = ' ';
+            if (c == ' ') {
+                if (!lastIsSpace) {
+                    text += ' ';
+                    lastIsSpace = true;
+                }
+            }
+            else {
+                text += c;
+                lastIsSpace = false;
+            }
+        }
+        if (!text.empty() && text.front() == ' ') 
+            text.erase(0, 1);
+        if (!text.empty() && text.back() == ' ') 
+            text.pop_back();
+    }
+
+    for (xml_attribute<>* attr = node->first_attribute(); attr; attr = attr->next_attribute()) {
+        string type(attr->name());
+        if (type == "x") 
+            x = stof(attr->value());
+        else if (type == "y") 
+            y = stof(attr->value());
+        else if (type == "rotate") 
+            rotate = stof(attr->value());
+        else if (type == "font-family") 
+            fontFamily = attr->value();
+        else if (type == "font-style") 
+            fontStyle = attr->value();
+        else if (type == "font-size") 
+            fontSize = stof(attr->value());
+        else if (type == "text-anchor") 
+            textAnchor = attr->value();
+        else if (type == "opacity") { 
+            opacity.setOpacity(stof(attr->value())); 
+            hasOpacity = true; 
+        }
+        else if (type == "fill") { 
+            fill.setFillColor(getRGB(attr->value())); 
+            hasFillColor = true; 
+        }
+        else if (type == "fill-opacity") { 
+            fill.setFillOpacity(stof(attr->value())); 
+            hasFillOpacity = true; 
+        }
+        else if (type == "stroke") { 
+            stroke.setStrokeColor(getRGB(attr->value())); 
+            hasStrokeColor = true; 
+        }
+        else if (type == "stroke-width") { 
+            stroke.setStrokeWidth(stof(attr->value())); 
+            hasStrokeWidth = true; 
+        }
+        else if (type == "stroke-opacity") { 
+            stroke.setStrokeOpacity(stof(attr->value())); 
+            hasStrokeOpacity = true; 
+        }
+        else if (type == "transform") 
+            parseTransform(attr->value());
+    }
 }
 
-void TextSVG::draw(Graphics& graphics) {
-	graphics.SetSmoothingMode(SmoothingModeAntiAlias);
-	graphics.SetTextRenderingHint(TextRenderingHintAntiAlias);
-	if (this->rotate == 0) {
-		GraphicsPath path;
-		StringFormat form;
-		form.SetAlignment(StringAlignmentNear);
-		form.SetLineAlignment(StringAlignmentNear);
-		wstring strText = ConvertStringToWstring(this->text);
-		wstring strFontFamily = ConvertStringToWstring(this->fontFamily);
-		const WCHAR* textWChar = strText.c_str();
-		FontFamily fontF(strFontFamily.c_str());
-		int fontStyle = FontStyleRegular;
-		if (this->fontStyle == "italic")
-			fontStyle = FontStyleItalic;
-		else if (this->fontStyle == "oblique") {
-			fontStyle = FontStyleItalic;
-			rotate += 10; // Oblique có độ nghiêng 10 + this->rotate ban đầu
-			draw(graphics); // Gọi đệ quy hàm drawText để vẽ text có điều kiện rotate > 0
-			return;
-		}
-		int asUnits = fontF.GetCellAscent(fontStyle);
-		int emUnits = fontF.GetEmHeight(fontStyle); // Tổng chiều cao
+// CẬP NHẬT: Thêm tham số defs
+void TextSVG::draw(Graphics& graphics, const DefinitionsSVG& defs) {
+    if (text.empty()) 
+        return;
 
-		// Chuyển đổi Ascent sang Pixels
-		// (Tỷ lệ ascent / Tổng chiều cao) * Kích thước font bằng pixel
-		float heightTextInPixel = ((float)asUnits / emUnits) * fontSize;
+    GraphicsState state = graphics.Save();
+    graphics.MultiplyTransform(&transformMatrix, MatrixOrderPrepend);
+    graphics.SetSmoothingMode(SmoothingModeAntiAlias);
+    graphics.SetTextRenderingHint(TextRenderingHintAntiAlias);
 
-		// Tính GdiX, GdiY (Top-Left)
-		float gdiX = this->x; // Điều chỉnh sai số để giống trên các trình duyệt web
-		float gdiY = this->y - heightTextInPixel;
+    wstring wFamily = getValidFontFamily(this->fontFamily);
+    FontFamily fontFamilyObj(wFamily.c_str());
 
-		PointF startPoint(gdiX, gdiY);
-		path.AddString(textWChar, -1, &fontF, fontStyle, this->fontSize, startPoint, &form);
-		float opacityAll = ((float)opacity.getOpacity() * 255);
-		Color rgbFill = fill.getFillColor();
-		float opacityFill = minValue(opacityAll, ((float)fill.getFillOpacity() * 255));
-		Color rgbStroke = stroke.getStrokeColor();
-		float opacityStroke = minValue(opacityAll, ((float)stroke.getStrokeOpacity() * 255));
-		rgbFill = Color(opacityFill, rgbFill.GetR(), rgbFill.GetG(), rgbFill.GetB());
-		rgbStroke = Color(opacityStroke, rgbStroke.GetR(), rgbStroke.GetG(), rgbStroke.GetB());
-		Pen penStroke(rgbStroke, stroke.getStrokeWidth());
-		SolidBrush penFill(rgbFill);
-		if (fill.getFillColor().GetA() > 0 || fill.getFillColor().GetR() > 0 || fill.getFillColor().GetG() > 0 || fill.getFillColor().GetB() > 0) graphics.FillPath(&penFill, &path);
-		if (stroke.getStrokeColor().GetA() > 0 || stroke.getStrokeColor().GetR() > 0 || stroke.getStrokeColor().GetG() > 0 || stroke.getStrokeColor().GetB() > 0) graphics.DrawPath(&penStroke, &path);
-	}
-	else {
-		wstring strFontFamily = ConvertStringToWstring(this->fontFamily);
-		FontFamily fontF(strFontFamily.c_str());
-		int fontStyle = FontStyleRegular;
-		if (this->fontStyle == "italic" || this->fontStyle == "oblique")
-			fontStyle = FontStyleItalic;
-		Font font(&fontF, this->fontSize, fontStyle, UnitPixel);
-		int asUnits = fontF.GetCellAscent(fontStyle);
-		int emUnits = fontF.GetEmHeight(fontStyle); // Tổng chiều cao
-		float heightTextInPixel = ((float)asUnits / emUnits) * fontSize;
-		float gdiX = this->x - 0.2f * heightTextInPixel;
-		float gdiY = this->y - 0.04f * heightTextInPixel;
-		float curX = gdiX;
-		float curY = gdiY; // Tọa độ baseline
-		for (int i = 0; i < this->text.size(); i++) {
-			StringFormat form;
-			Region chrRegion;
-			RectF layout;
-			form.SetAlignment(StringAlignmentNear);
-			form.SetLineAlignment(StringAlignmentNear);
-			form.SetFormatFlags(form.GetFormatFlags() | StringFormatFlagsNoClip);
-			CharacterRange chrRange(0, 1); // Đo 1 ký tự từ index = 0
-			form.SetMeasurableCharacterRanges(1, &chrRange);
-			string charStr(1, this->text[i]);
-			wstring strText = ConvertStringToWstring(charStr);
-			const WCHAR* wCharText = strText.c_str();
-			GraphicsState state = graphics.Save();
-			graphics.TranslateTransform(curX, curY);
-			graphics.RotateTransform((float)this->rotate);
-			PointF curPoint(0.0f, -heightTextInPixel);
-			float opacityAll = ((float)opacity.getOpacity() * 255);
-			Color rgbFill = fill.getFillColor();
-			float opacityFill = minValue(opacityAll, ((float)fill.getFillOpacity() * 255));
-			Color rgbStroke = stroke.getStrokeColor();
-			float opacityStroke = minValue(opacityAll, ((float)stroke.getStrokeOpacity() * 255));
-			rgbFill = Color(opacityFill, rgbFill.GetR(), rgbFill.GetG(), rgbFill.GetB());
-			rgbStroke = Color(opacityStroke, rgbStroke.GetR(), rgbStroke.GetG(), rgbStroke.GetB());
-			Pen penStroke(rgbStroke, stroke.getStrokeWidth());
-			SolidBrush penFill(rgbFill);
-			graphics.DrawString(wCharText, -1, &font, PointF(0.0f, -heightTextInPixel), &form, &penFill);
-			graphics.Restore(state);
+    int style = FontStyleRegular;
+    if (this->fontStyle == "italic" || this->fontStyle == "oblique") style = FontStyleItalic;
+    if (this->fontStyle == "bold") style = FontStyleBold;
 
-			GraphicsContainer cont = graphics.BeginContainer();
-			graphics.ResetTransform();
-			graphics.MeasureString(wCharText, -1, &font, PointF(0, 0), &form, &layout);
-			graphics.EndContainer(cont);
+    UINT16 ascent = fontFamilyObj.GetCellAscent(style);
+    UINT16 emHeight = fontFamilyObj.GetEmHeight(style);
+    float ascentPixel = (float)ascent / emHeight * this->fontSize;
+    float gdiY = this->y - ascentPixel;
+    PointF origin(this->x, gdiY);
 
-			curX += layout.Width - layout.Width / 3.0f; // Dịch chuyển 1 khoảng sau khi vẽ xong 1 ký tự, /3.0f để tránh giãn chữ quá xa
-		}
-	}
+    if (this->rotate != 0) {
+        graphics.TranslateTransform(this->x, this->y);
+        graphics.RotateTransform(this->rotate);
+        graphics.TranslateTransform(-this->x, -this->y);
+    }
+
+    GraphicsPath path;
+    StringFormat format;
+    format.SetAlignment(getValidAlignment(this->textAnchor));
+    format.SetLineAlignment(StringAlignmentNear);
+    format.SetFormatFlags(StringFormatFlagsNoWrap | StringFormatFlagsMeasureTrailingSpaces);
+
+    wstring wText = ConvertStringToWstring(this->text);
+    path.AddString(wText.c_str(), -1, &fontFamilyObj, style, this->fontSize, origin, &format);
+
+    float globalOpacity = opacity.getOpacity() * 255.0f;
+
+    Color rgbFill = fill.getFillColor();
+    float finalFillAlpha = globalOpacity * fill.getFillOpacity();
+    if (finalFillAlpha > rgbFill.GetA()) finalFillAlpha = (float)rgbFill.GetA();
+
+    Color finalFillColor((BYTE)finalFillAlpha, rgbFill.GetR(), rgbFill.GetG(), rgbFill.GetB());
+    SolidBrush brush(finalFillColor);
+
+    Color rgbStroke = stroke.getStrokeColor();
+    float finalStrokeAlpha = globalOpacity * stroke.getStrokeOpacity();
+    if (finalStrokeAlpha > rgbStroke.GetA()) finalStrokeAlpha = (float)rgbStroke.GetA();
+
+    Color finalStrokeColor((BYTE)finalStrokeAlpha, rgbStroke.GetR(), rgbStroke.GetG(), rgbStroke.GetB());
+    float currentStrokeWidth = stroke.getStrokeWidth();
+    if (finalStrokeAlpha > 0 && currentStrokeWidth <= 0.0f)
+        currentStrokeWidth = 1.0f;
+    Pen pen(finalStrokeColor, currentStrokeWidth);
+
+    if (finalFillAlpha > 0)
+        graphics.FillPath(&brush, &path);
+    if (finalStrokeAlpha > 0 && currentStrokeWidth > 0)
+        graphics.DrawPath(&pen, &path);
+
+    graphics.Restore(state);
 }
 
 TextSVG::~TextSVG() {}
