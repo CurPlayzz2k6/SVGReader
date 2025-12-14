@@ -15,7 +15,7 @@ protected:
 public:
 	EllipseSVG();
 	void read(xml_node<>* node);
-	void draw(Graphics& graphics) override;
+	void draw(Graphics& graphics, const DefinitionsSVG& defs) override;
 	~EllipseSVG();
 };
 #endif ELLIPSESVG_H
