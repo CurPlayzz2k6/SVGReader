@@ -14,7 +14,7 @@ private:
 public:
 	PolylineSVG();
 	void read(xml_node<>* node);
-	void draw(Graphics& graphics) override;
+	void draw(Graphics& graphics, const DefinitionsSVG& defs) override;
 	~PolylineSVG();
 };
 #endif POLYLINESVG_H
