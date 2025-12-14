@@ -152,6 +152,27 @@ const map<string, string> htmlColor = {
 	{"yellowgreen", "#FF9ACD32"}
 };
 
+string getUrlId(string value) {
+	if (value.find("url(") != string::npos) {
+		size_t startIndex = value.find("#");
+		size_t endIndex = value.find(")");
+		if (startIndex != string::npos && endIndex != string::npos) {
+			return value.substr(startIndex + 1, endIndex - startIndex - 1);
+		}
+	}
+	return "";
+}
+
+// Hàm format: Biến dấu phẩy, ngoặc thành khoảng trắng để stringstream dễ đọc
+string formatTransformString(string s) {
+	string res = "";
+	for (char c : s) {
+		if (c == ',' || c == '(' || c == ')') res += ' ';
+		else res += c;
+	}
+	return res;
+}
+
 string toLowerStr(string str) {
 	for (int i = 0; i < str.size(); i++)
 		str[i] = tolower(str[i]);
@@ -169,10 +190,23 @@ int convertHexToDec(string hex) {
 Color getRGB(string colorStr) {
 	vector<int> rgb(4, 0);
 	colorStr = toLowerStr(colorStr);
+	string tmpStr = "";
+	if (colorStr.size() == 4 && colorStr[0] == '#') {
+		tmpStr += colorStr[0];
+		tmpStr += "FF";
+		tmpStr += colorStr[1];
+		tmpStr += colorStr[1];
+		tmpStr += colorStr[2];
+		tmpStr += colorStr[2];
+		tmpStr += colorStr[3];
+		tmpStr += colorStr[3];
+		colorStr = tmpStr;
+	}
+
 	if (colorStr == "#00000000" || colorStr == "none") {
-		cout << "(00000)" << endl;
 		return Color(0, 0, 0, 0);
 	}
+
 	if (colorStr[0] == '#' && colorStr.size() == 9) {
 		rgb[0] = convertHexToDec(colorStr.substr(1, 2));
 		rgb[1] = convertHexToDec(colorStr.substr(3, 2));
@@ -192,16 +226,28 @@ Color getRGB(string colorStr) {
 	}
 	else {
 		int id = 0;
-		for (int i = 0; i < colorStr.size(); i++)
-			if (colorStr[i] >= '0' && colorStr[i] <= '9')
+		for (int i = 0; i < colorStr.size(); i++) {
+			if (colorStr[i] >= '0' && colorStr[i] <= '9') {
 				rgb[id] = 10 * rgb[id] + (colorStr[i] - '0');
-			else if (colorStr[i] == ',')
+			}
+			else if (colorStr[i] == ',') {
 				id++;
-			else if (colorStr[i] == ')')
+			}
+			else if (colorStr[i] == ')') {
 				break;
+			}
+		}
+
+		for (int i = 0; i < 4; i++) {
+			if (rgb[i] > 255) {
+				rgb[i] = 255;
+			}
+		}
+
 		if (id == 2)
 			return Color(255, rgb[0], rgb[1], rgb[2]);
-		else return Color(rgb[0], rgb[1], rgb[2], rgb[3]);
+		else
+			return Color(rgb[0], rgb[1], rgb[2], rgb[3]);
 	}
 }
 
@@ -217,30 +263,17 @@ wstring ConvertStringToWstring(const string& str)
 }
 
 vector<PointF> getPolyPoints(string points) {
-	vector<float> arrTmp;
+	string s = points;
+	replace(s.begin(), s.end(), ',', ' ');
+
+	stringstream ss(s);
+
 	vector<PointF> polyPoints;
-	float tmp10 = 10;
-	bool startDot = false;
-	float tmp = 0;
-	points += " ";
-	for (int i = 0; i < points.size(); i++) {
-		if (points[i] >= '0' && points[i] <= '9' && !startDot)
-			tmp = 10.0f * tmp + ((float)points[i] - '0');
-		else if (points[i] >= '0' && points[i] <= '9' && !startDot) {
-			tmp += ((float)points[i] - 10) / tmp10;
-			tmp10 *= 10;
-		}
-		if (points[i] == '.') startDot = true;
-		if (points[i] == ',' || points[i] == ' ') {
-			startDot = false;
-			tmp10 = 10;
-			arrTmp.push_back(tmp);
-			tmp = 0;
-		}
-	}
-	for (int i = 0; i < arrTmp.size(); i += 2) {
-		polyPoints.push_back(PointF(arrTmp[i], arrTmp[i + 1]));
-	}
+	float x, y;
+
+	while (ss >> x && ss >> y)
+		polyPoints.push_back(PointF(x, y));
+
 	return polyPoints;
 }
 

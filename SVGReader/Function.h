@@ -18,6 +18,9 @@ using namespace std;
 using namespace rapidxml;
 using namespace Gdiplus;
 
+// Hàm format: Biến dấu phẩy, ngoặc thành khoảng trắng để stringstream dễ đọc
+string getUrlId(string value);
+string formatTransformString(string s);
 string toLowerStr(string str);
 int convertHexToDec(string hex);
 Color getRGB(string rgbStr);
