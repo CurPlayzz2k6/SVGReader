@@ -24,42 +24,48 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CircleSVG.cpp" />
+    <ClCompile Include="DefinitionsSVG.cpp" />
     <ClCompile Include="EllipseSVG.cpp" />
     <ClCompile Include="FillShapeSVG.cpp" />
     <ClCompile Include="FillSVG.cpp" />
     <ClCompile Include="Function.cpp" />
+    <ClCompile Include="GroupSVG.cpp" />
     <ClCompile Include="LineSVG.cpp" />
     <ClCompile Include="NonFillShapeSVG.cpp" />
     <ClCompile Include="OpacitySVG.cpp" />
     <ClCompile Include="ParserSVG.cpp" />
+    <ClCompile Include="PathSVG.cpp" />
     <ClCompile Include="PolygonSVG.cpp" />
     <ClCompile Include="PolylineSVG.cpp" />
     <ClCompile Include="RectangleSVG.cpp" />
     <ClCompile Include="RenderSVG.cpp" />
-    <ClCompile Include="ShapeSVG.cpp" />
+    <ClCompile Include="ElementSVG.cpp" />
     <ClCompile Include="StrokeSVG.cpp" />
     <ClCompile Include="SVGReader.cpp" />
     <ClCompile Include="TextSVG.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CircleSVG.h" />
+    <ClInclude Include="DefinitionsSVG.h" />
     <ClInclude Include="EllipseSVG.h" />
     <ClInclude Include="FillShapeSVG.h" />
     <ClInclude Include="FillSVG.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Function.h" />
     <ClInclude Include="GlobalVariables.h" />
+    <ClInclude Include="GroupSVG.h" />
     <ClInclude Include="LineSVG.h" />
     <ClInclude Include="NonFillShapeSVG.h" />
     <ClInclude Include="OpacitySVG.h" />
     <ClInclude Include="ParserSVG.h" />
+    <ClInclude Include="PathSVG.h" />
     <ClInclude Include="PolygonSVG.h" />
     <ClInclude Include="PolylineSVG.h" />
     <ClInclude Include="rapidxml.hpp" />
     <ClInclude Include="RectangleSVG.h" />
     <ClInclude Include="RenderSVG.h" />
     <ClInclude Include="Resource.h" />
-    <ClInclude Include="ShapeSVG.h" />
+    <ClInclude Include="ElementSVG.h" />
     <ClInclude Include="StrokeSVG.h" />
     <ClInclude Include="SVGReader.h" />
     <ClInclude Include="targetver.h" />
