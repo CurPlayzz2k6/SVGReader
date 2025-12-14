@@ -1,86 +1,77 @@
-#include "Function.h"
 #include "RenderSVG.h"
+// #include "DefinitionsSVG.h" // Đã include trong .h
 
 using namespace Gdiplus;
 using namespace std;
 
 RenderSVG::RenderSVG() {}
 
-void RenderSVG::readRecursiveElement(xml_node<>* node) {
-	if (!node) return;
-	if (node->name()) {
-		const string nodeName(node->name());
-		if (nodeName == "rect") {
-			ShapeSVG* rect = new RectangleSVG();
-			rect->read(node);
-			shapes.push_back(rect);
-		}
-		else if (nodeName == "circle") {
-			ShapeSVG* circle = new CircleSVG();
-			circle->read(node);
-			shapes.push_back(circle);
-		}
-		else if (nodeName == "ellipse") {
-			ShapeSVG* ellipse = new EllipseSVG();
-			ellipse->read(node);
-			shapes.push_back(ellipse);
-		}
-		else if (nodeName == "text") {
-			ShapeSVG* text = new TextSVG();
-			text->read(node);
-			shapes.push_back(text);
-		}
-		else if (nodeName == "line") {
-			ShapeSVG* line = new LineSVG();
-			line->read(node);
-			shapes.push_back(line);
-		}
-		else if (nodeName == "polygon") {
-			ShapeSVG* polygon = new PolygonSVG();
-			polygon->read(node);
-			shapes.push_back(polygon);
-		}
-		else if (nodeName == "polyline") {
-			ShapeSVG* polyline = new PolylineSVG();
-			polyline->read(node);
-			shapes.push_back(polyline);
-		}
-	}
-
-	// Đệ quy: Lặp qua tất cả các node con thuộc tag đã đọc và gọi lại hàm này
-	for (xml_node<>* child = node->first_node(); child; child = child->next_sibling())
-		readRecursiveElement(child);
-}
-
 void RenderSVG::readAll(ParserSVG& fileXML) {
-	xml_node<>* rootNode = fileXML.getSVGDocumentFirstNode();
-	if (rootNode != NULL) {
-		xml_node<>* node;
-		node = rootNode->first_node();
-		if (node == NULL) {
-			return;
-		}
-		while (node != NULL) {
-			readRecursiveElement(node);
-			node = node->next_sibling();
-		}
-	}
+    xml_node<>* rootNode = fileXML.getSVGDocumentFirstNode();
+    if (rootNode == NULL) return;
+
+    // CẬP NHẬT: Gọi readDefs thông qua biến thành viên defs
+    for (xml_node<>* node = rootNode->first_node(); node; node = node->next_sibling())
+        if (string(node->name()) == "defs")
+            defs.readDefs(node);
+
+    xml_node<>* node = rootNode->first_node();
+    while (node != NULL) {
+        const string nodeName = node->name();
+
+        if (nodeName == "defs") {
+            node = node->next_sibling();
+            continue;
+        }
+
+        ElementSVG* element = nullptr;
+
+        if (nodeName == "rect")
+            element = new RectangleSVG();
+        else if (nodeName == "circle")
+            element = new CircleSVG();
+        else if (nodeName == "ellipse")
+            element = new EllipseSVG();
+        else if (nodeName == "line")
+            element = new LineSVG();
+        else if (nodeName == "polygon")
+            element = new PolygonSVG();
+        else if (nodeName == "polyline")
+            element = new PolylineSVG();
+        else if (nodeName == "text")
+            element = new TextSVG();
+        else if (nodeName == "path")
+            element = new PathSVG();
+        else if (nodeName == "g")
+            element = new GroupSVG();
+
+        if (element != nullptr) {
+            element->read(node);
+            groups.push_back(element);
+        }
+
+        node = node->next_sibling();
+    }
 }
 
 void RenderSVG::drawAll(Graphics* graphics) {
-	for (ShapeSVG* shape : shapes)
-		shape->draw(*graphics);
-	return;
+    for (ElementSVG* element : groups)
+        if (element != NULL)
+            // CẬP NHẬT: Truyền defs vào hàm draw
+            element->draw(*graphics, defs);
 }
 
 void RenderSVG::clearAll() {
-	if (!shapes.empty())
-		for (ShapeSVG* shape : shapes)
-			if (shape != NULL)
-				delete shape;
-	shapes.clear();
+    if (!groups.empty()) {
+        for (ElementSVG* element : groups) {
+            if (element != NULL) delete element;
+        }
+    }
+    groups.clear();
+    // Có thể gọi defs.clear() nếu cần reset cho lần đọc sau
+    defs.clear();
 }
 
 RenderSVG::~RenderSVG() {
-	clearAll();
+    clearAll();
 }
