@@ -1,5 +1,5 @@
 #include "TextSVG.h"
-#include "DefinitionsSVG.h" // Include để nhận diện kiểu DefinitionsSVG
+#include "DefinitionsSVG.h"
 #include <iostream>
 #include <algorithm>
 
@@ -108,7 +108,6 @@ void TextSVG::read(xml_node<>* node) {
     }
 }
 
-// CẬP NHẬT: Thêm tham số defs
 void TextSVG::draw(Graphics& graphics, const DefinitionsSVG& defs) {
     if (text.empty()) 
         return;
