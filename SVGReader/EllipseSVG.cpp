@@ -63,7 +63,6 @@ void EllipseSVG::read(xml_node<>* node) {
     }
 }
 
-// CẬP NHẬT: Thêm tham số defs
 void EllipseSVG::draw(Graphics& graphics, const DefinitionsSVG& defs) {
     GraphicsState state = graphics.Save();
     graphics.MultiplyTransform(&transformMatrix, MatrixOrderPrepend);
@@ -71,48 +70,45 @@ void EllipseSVG::draw(Graphics& graphics, const DefinitionsSVG& defs) {
 
     float opacityAll = opacity.getOpacity() * 255.0f;
 
-    // SỬA ĐỔI: Dùng defs.getGradient
-    const LinearGradientData* gradData = nullptr;
+    const LinearGradientData* gradientData = nullptr;
     if (!fillGradientId.empty()) {
-        gradData = defs.getGradient(fillGradientId);
+        gradientData = defs.getGradient(fillGradientId);
     }
 
     Brush* fillBrush = nullptr;
-    LinearGradientBrush* gradBrush = nullptr;
+    LinearGradientBrush* gradientBrush = nullptr;
     SolidBrush* solidBrush = nullptr;
 
-    if (gradData) {
+    if (gradientData) {
         RectF bounds(cx - rx, cy - ry, 2 * rx, 2 * ry);
         if (bounds.Width <= 0) bounds.Width = 0.1f;
         if (bounds.Height <= 0) bounds.Height = 0.1f;
 
-        PointF start(bounds.X + gradData->startPoint.X * bounds.Width, bounds.Y + gradData->startPoint.Y * bounds.Height);
-        PointF end(bounds.X + gradData->endPoint.X * bounds.Width, bounds.Y + gradData->endPoint.Y * bounds.Height);
+        PointF start(bounds.X + gradientData->startPoint.X * bounds.Width, bounds.Y + gradientData->startPoint.Y * bounds.Height);
+        PointF end(bounds.X + gradientData->endPoint.X * bounds.Width, bounds.Y + gradientData->endPoint.Y * bounds.Height);
 
         if (abs(start.X - end.X) < 0.001f && abs(start.Y - end.Y) < 0.001f) end.X += 0.1f;
 
-        gradBrush = new LinearGradientBrush(start, end, Color::Black, Color::White);
-        int count = gradData->stops.size();
+        gradientBrush = new LinearGradientBrush(start, end, Color::Black, Color::White);
+        int count = gradientData->stops.size();
 
         if (count > 0) {
-            Color* colors = new Color[count];
-            float* positions = new float[count];
+            vector<Color> colors(count);
+            vector<float> positions(count);
 
             for (int i = 0; i < count; ++i) {
-                Color c = gradData->stops[i].color;
+                Color c = gradientData->stops[i].color;
                 float stopAlpha = c.GetA();
                 float fillOp = fill.getFillOpacity();
                 float finalA = stopAlpha * (opacityAll / 255.0f) * fillOp;
                 if (finalA > 255.0f) finalA = 255.0f;
 
                 colors[i] = Color((float)finalA, c.GetR(), c.GetG(), c.GetB());
-                positions[i] = gradData->stops[i].offset;
+                positions[i] = gradientData->stops[i].offset;
             }
-            gradBrush->SetInterpolationColors(colors, positions, count);
-            delete[] colors;
-            delete[] positions;
+            gradientBrush->SetInterpolationColors(colors.data(), positions.data(), count);
         }
-        fillBrush = gradBrush;
+        fillBrush = gradientBrush;
     }
     else {
         Color rgbFill = fill.getFillColor();
@@ -142,10 +138,12 @@ void EllipseSVG::draw(Graphics& graphics, const DefinitionsSVG& defs) {
         }
     }
 
-    if (fillBrush) graphics.FillEllipse(fillBrush, cx - rx, cy - ry, 2 * rx, 2 * ry);
-    if (strokePen) graphics.DrawEllipse(strokePen, cx - rx, cy - ry, 2 * rx, 2 * ry);
+    if (fillBrush) 
+        graphics.FillEllipse(fillBrush, cx - rx, cy - ry, 2 * rx, 2 * ry);
+    if (strokePen) 
+        graphics.DrawEllipse(strokePen, cx - rx, cy - ry, 2 * rx, 2 * ry);
 
-    if (gradBrush) delete gradBrush;
+    if (gradientBrush) delete gradientBrush;
     if (solidBrush) delete solidBrush;
     if (strokePen) delete strokePen;
 
