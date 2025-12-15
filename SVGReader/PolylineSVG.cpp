@@ -58,7 +58,6 @@ void PolylineSVG::read(xml_node<>* node) {
     }
 }
 
-// CẬP NHẬT: Thêm tham số defs
 void PolylineSVG::draw(Graphics& graphics, const DefinitionsSVG& defs) {
     GraphicsState state = graphics.Save();
     graphics.MultiplyTransform(&transformMatrix, MatrixOrderPrepend);
@@ -72,7 +71,6 @@ void PolylineSVG::draw(Graphics& graphics, const DefinitionsSVG& defs) {
         return;
     }
 
-    // SỬA ĐỔI: Dùng defs.getGradient
     const LinearGradientData* gradientData = nullptr;
     if (!fillGradientId.empty())
         gradientData = defs.getGradient(fillGradientId);
@@ -106,8 +104,8 @@ void PolylineSVG::draw(Graphics& graphics, const DefinitionsSVG& defs) {
         gradientBrush = new LinearGradientBrush(start, end, Color::Black, Color::White);
         int count = gradientData->stops.size();
         if (count > 0) {
-            Color* colors = new Color[count];
-            float* positions = new float[count];
+            vector<Color> colors(count);
+            vector<float> positions(count);
             for (int i = 0; i < count; ++i) {
                 Color c = gradientData->stops[i].color;
                 float finalA = c.GetA() * (opacityAll / 255.0f) * fill.getFillOpacity();
@@ -115,9 +113,7 @@ void PolylineSVG::draw(Graphics& graphics, const DefinitionsSVG& defs) {
                 colors[i] = Color(finalA, c.GetR(), c.GetG(), c.GetB());
                 positions[i] = gradientData->stops[i].offset;
             }
-            gradientBrush->SetInterpolationColors(colors, positions, count);
-            delete[] colors;
-            delete[] positions;
+            gradientBrush->SetInterpolationColors(colors.data(), positions.data(), count);
         }
         fillBrush = gradientBrush;
     }
