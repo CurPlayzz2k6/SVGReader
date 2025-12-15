@@ -396,10 +396,10 @@ void drawNote(Graphics& graphics, int windowWidth, int windowHeight) {
 	SolidBrush textBrush(Color(255, 255, 255, 255)); // Chữ màu trắng
 	SolidBrush bgBrush(Color(180, 0, 0, 0));         // Nền đen bán trong suốt (Alpha = 180)
 	vector<wstring> lines = {
-		L"Kéo thả chuột: Panning (Di chuyển)",
-		L"Lăn chuột: Phóng to / Thu nhỏ",
-		L"Phím ← : Xoay trái 10°",
-		L"Phím → : Xoay phải 10°"
+		L"Drag and drop: Panning",
+		L"Scroll: Zoom in / Zoom out",
+		L"Press ←: Rotate left",
+		L"Press →: Rotate right"
 	};
 	float lineHeight = 20.0f;
 	float padding = 10.0f;
