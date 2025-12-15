@@ -71,25 +71,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 void InitializeGDIPlus();
 void ShutdownGDIPlus();
 bool OpenFile(HWND hwnd);
-
-//void EnableConsole()
-//{
-//	// Cấp phát một console mới cho tiến trình
-//	if (AllocConsole())
-//	{
-//		// Gắn luồng Output (stdout, stderr) vào console mới
-//		FILE* pConsoleOut;
-//		freopen_s(&pConsoleOut, "CONOUT$", "w", stdout);
-//		freopen_s(&pConsoleOut, "CONOUT$", "w", stderr);
-//
-//		// Gắn luồng Input (stdin) vào console mới
-//		FILE* pConsoleIn;
-//		freopen_s(&pConsoleIn, "CONIN$", "r", stdin);
-//
-//		// Đồng bộ hóa các luồng C++ (std::cout, std::cin) với các luồng C
-//		std::ios::sync_with_stdio(true);
-//	}
-//}
+void drawNote(Graphics& graphics, int windowWidth, int windowHeight);
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR pCmdLine, int nCmdShow) {
 
@@ -197,6 +179,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 		transformMatrix.Translate(fPanX, fPanY, MatrixOrderAppend); // Áp dụng Pan (Translate)
 		memG.SetTransform(&transformMatrix);
 		screen.drawAll(&memG);
+		drawNote(memG, width, height);
 
 		Graphics graphics(hdc);
 		graphics.SetSmoothingMode(SmoothingModeAntiAlias);
@@ -384,7 +367,6 @@ bool OpenFile(HWND hwnd) {
 			InvalidateRect(hwnd, NULL, TRUE);
 			return true;
 		}
-		MessageBoxW(hwnd, L"Cannot open file!", L"Error", MB_OK | MB_ICONERROR);
 		return false;
 
 	}
@@ -403,4 +385,34 @@ bool OpenFile(HWND hwnd) {
 		return false;
 	}
 
+}
+
+void drawNote(Graphics& graphics, int windowWidth, int windowHeight) {
+	Matrix oldMatrix;
+	graphics.GetTransform(&oldMatrix);
+	graphics.ResetTransform();
+	FontFamily fontFamily(L"Arial");
+	Font font(&fontFamily, 10, FontStyleRegular, UnitPoint);
+	SolidBrush textBrush(Color(255, 255, 255, 255)); // Chữ màu trắng
+	SolidBrush bgBrush(Color(180, 0, 0, 0));         // Nền đen bán trong suốt (Alpha = 180)
+	vector<wstring> lines = {
+		L"Kéo thả chuột: Panning (Di chuyển)",
+		L"Lăn chuột: Phóng to / Thu nhỏ",
+		L"Phím ← : Xoay trái 10°",
+		L"Phím → : Xoay phải 10°"
+	};
+	float lineHeight = 20.0f;
+	float padding = 10.0f;
+	float boxWidth = 230.0f;
+	float boxHeight = (lines.size() * lineHeight) + (padding * 2);
+	float margin = 10.0f;
+	float x = (float)windowWidth - boxWidth - margin;
+	float y = (float)windowHeight - boxHeight - margin;
+	graphics.FillRectangle(&bgBrush, x, y, boxWidth, boxHeight);
+	PointF textPos(x + padding, y + padding);
+	for (const auto& line : lines) {
+		graphics.DrawString(line.c_str(), -1, &font, textPos, &textBrush);
+		textPos.Y += lineHeight;
+	}
+	graphics.SetTransform(&oldMatrix);
 }
