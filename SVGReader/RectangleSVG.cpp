@@ -111,8 +111,8 @@ void RectangleSVG::draw(Graphics& graphics, const DefinitionsSVG& defs) {
         int count = gradientData->stops.size();
 
         if (count > 0) {
-            Color* colors = new Color[count];
-            float* positions = new float[count];
+            vector<Color> colors(count);
+            vector<float> positions(count);
 
             for (int i = 0; i < count; ++i) {
                 Color c = gradientData->stops[i].color;
@@ -125,9 +125,7 @@ void RectangleSVG::draw(Graphics& graphics, const DefinitionsSVG& defs) {
                 colors[i] = Color(finalA, c.GetR(), c.GetG(), c.GetB());
                 positions[i] = gradientData->stops[i].offset;
             }
-            gradientBrush->SetInterpolationColors(colors, positions, count);
-            delete[] colors;
-            delete[] positions;
+            gradientBrush->SetInterpolationColors(colors.data(), positions.data(), count);
         }
         fillBrush = gradientBrush;
     }
