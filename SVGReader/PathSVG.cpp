@@ -219,8 +219,8 @@ void PathSVG::draw(Graphics& graphics, const DefinitionsSVG& defs) {
         int count = gradientData->stops.size();
 
         if (count > 0) {
-            Color* colors = new Color[count];
-            float* positions = new float[count];
+            vector<Color> colors(count);
+            vector<float> positions(count);
 
             for (int i = 0; i < count; ++i) {
                 Color c = gradientData->stops[i].color;
@@ -235,11 +235,8 @@ void PathSVG::draw(Graphics& graphics, const DefinitionsSVG& defs) {
                 colors[i] = Color(finalA, c.GetR(), c.GetG(), c.GetB());
                 positions[i] = gradientData->stops[i].offset;
             }
-            gradientBrush.SetInterpolationColors(colors, positions, count);
+            gradientBrush.SetInterpolationColors(colors.data(), positions.data(), count);
             graphics.FillPath(&gradientBrush, &path);
-
-            delete[] colors;
-            delete[] positions;
         }
     }
     else {
