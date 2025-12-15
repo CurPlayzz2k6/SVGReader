@@ -384,7 +384,6 @@ bool OpenFile(HWND hwnd) {
 			InvalidateRect(hwnd, NULL, TRUE);
 			return true;
 		}
-		MessageBoxW(hwnd, L"Cannot open file!", L"Error", MB_OK | MB_ICONERROR);
 		return false;
 
 	}
