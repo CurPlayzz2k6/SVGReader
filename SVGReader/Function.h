@@ -1,5 +1,6 @@
 #ifndef FUNCTION_H
 #define FUNCTION_H
+
 #include <windows.h>
 #include <gdiplus.h>
 #include <commdlg.h>
@@ -18,7 +19,6 @@ using namespace std;
 using namespace rapidxml;
 using namespace Gdiplus;
 
-// Hàm format: Biến dấu phẩy, ngoặc thành khoảng trắng để stringstream dễ đọc
 string getUrlId(string value);
 string formatTransformString(string s);
 string toLowerStr(string str);
@@ -27,5 +27,8 @@ Color getRGB(string rgbStr);
 wstring ConvertStringToWstring(const string& str);
 vector<PointF> getPolyPoints(string points);
 float minValue(float a, float b);
+string cleanTransformString(string s);
+float parseFloat(stringstream& ss);
+float parseString(const string& s);
 
 #endif FUNCTION_H
