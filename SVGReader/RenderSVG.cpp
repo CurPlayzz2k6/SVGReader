@@ -9,7 +9,7 @@ RenderSVG::RenderSVG() {}
 void RenderSVG::readAll(ParserSVG& fileXML) {
     xml_node<>* rootNode = fileXML.getSVGDocumentFirstNode();
     if (rootNode == NULL) return;
-
+    defs.readDefs(rootNode);
     // CẬP NHẬT: Gọi readDefs thông qua biến thành viên defs
     for (xml_node<>* node = rootNode->first_node(); node; node = node->next_sibling())
         if (string(node->name()) == "defs")
