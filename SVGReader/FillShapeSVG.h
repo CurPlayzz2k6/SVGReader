@@ -10,10 +10,12 @@ using namespace std;
 class FillShapeSVG : public ElementSVG {
 protected:
 	FillSVG fill;
-
 	string fillGradientId;
-	bool hasFillColor, hasFillOpacity;
-	bool hasStrokeColor, hasStrokeWidth, hasStrokeOpacity;
+	bool hasFillColor;
+	bool hasFillOpacity;
+	bool hasStrokeColor;
+	bool hasStrokeWidth;
+	bool hasStrokeOpacity;
 	bool hasOpacity;
 
 public:
