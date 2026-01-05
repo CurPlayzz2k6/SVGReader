@@ -26,19 +26,22 @@ GroupSVG::GroupSVG() {
 }
 
 void GroupSVG::inheritStyle(FillSVG& pFill, StrokeSVG& pStroke, OpacitySVG& pOpacity) {
-    // Nhận style từ cha (nếu Group hiện tại không tự định nghĩa)
-    if (!hasFillColor) this->fill.setFillColor(pFill.getFillColor());
-    if (!hasFillOpacity) this->fill.setFillOpacity(pFill.getFillOpacity());
-    if (!hasStrokeColor) this->stroke.setStrokeColor(pStroke.getStrokeColor());
-    if (!hasStrokeWidth) this->stroke.setStrokeWidth(pStroke.getStrokeWidth());
-    if (!hasStrokeOpacity) this->stroke.setStrokeOpacity(pStroke.getStrokeOpacity());
+    if (!hasFillColor) 
+        this->fill.setFillColor(pFill.getFillColor());
+    if (!hasFillOpacity) 
+        this->fill.setFillOpacity(pFill.getFillOpacity());
+    if (!hasStrokeColor) 
+        this->stroke.setStrokeColor(pStroke.getStrokeColor());
+    if (!hasStrokeWidth) 
+        this->stroke.setStrokeWidth(pStroke.getStrokeWidth());
+    if (!hasStrokeOpacity) 
+        this->stroke.setStrokeOpacity(pStroke.getStrokeOpacity());
 
     // Opacity có tính chất nhân dồn
     float parentOp = pOpacity.getOpacity();
     if (!hasOpacity) this->opacity.setOpacity(parentOp);
     else this->opacity.setOpacity(this->opacity.getOpacity() * parentOp);
 
-    // Truyền tiếp Style đã được hợp nhất xuống cho tất cả các con (Children)
     for (ElementSVG* child : children) {
         // Nếu con là hình có Fill (Rect, Circle, Ellipse...)
         FillShapeSVG* fillShape = dynamic_cast<FillShapeSVG*>(child);

@@ -2,21 +2,20 @@
 #define PATHSVG_H
 
 #include "FillShapeSVG.h"
-#include "DefinitionsSVG.h"
 #include <vector>
-#include <sstream>
+#include <string>
 
 class PathSVG : public FillShapeSVG {
 private:
-	GraphicsPath path;
+    GraphicsPath path;
+    static string formatPathString(string d);
+    void parsePathData(string d);
 
 public:
-	PathSVG();
-	static string formatPathString(string d);
-	void read(xml_node<>* node) override;
-	void draw(Graphics& graphics, const DefinitionsSVG& defs) override;
-	void parsePathData(string d);
-	~PathSVG();
+    PathSVG();
+    void read(xml_node<>* node) override;
+    void draw(Graphics& graphics, const DefinitionsSVG& defs) override;
+    ~PathSVG();
 };
 
 #endif PATHSVG_H

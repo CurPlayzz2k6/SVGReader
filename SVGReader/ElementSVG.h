@@ -5,12 +5,10 @@
 #include "StrokeSVG.h"
 #include "FillSVG.h"
 #include "OpacitySVG.h"
+#include "DefinitionsSVG.h"
 #include <vector>
 #include <string>
 #include <sstream>
-
-// Forward declaration để tránh lỗi include vòng tròn
-class DefinitionsSVG;
 
 using namespace Gdiplus;
 using namespace rapidxml;
@@ -20,17 +18,18 @@ class ElementSVG {
 protected:
     StrokeSVG stroke;
     OpacitySVG opacity;
+    FillSVG fill;
+    string fillGradientId;
+    string className;
     Matrix transformMatrix;
+
+    static void parseStyle(string styleStr, FillSVG& fill, StrokeSVG& stroke, OpacitySVG& opacity, bool& hasFill, bool& hasFillOp, bool& hasStroke, bool& hasStrokeW, bool& hasStrokeOp, string& gradId);
 
 public:
     ElementSVG();
-
     void parseTransform(string transformStr);
     virtual void read(xml_node<>* node) = 0;
-
-    // CẬP NHẬT: Nhận thêm const DefinitionsSVG& defs
     virtual void draw(Graphics& graphics, const DefinitionsSVG& defs) = 0;
-
     virtual ~ElementSVG() {};
 };
 #endif ELEMENTSVG_H

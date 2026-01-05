@@ -1,15 +1,15 @@
 #ifndef GROUPSVG_H
 #define GROUPSVG_H
 
-#include "ElementSVG.h"
 #include "rapidxml.hpp"
+#include "Function.h"
+#include "ElementSVG.h"
+#include "DefinitionsSVG.h" 
 #include <vector>
 #include <gdiplus.h>
 
-// Forward declaration để tránh lỗi biên dịch nếu header chưa include đủ
 class DefinitionsSVG;
 
-// Include đầy đủ các hình con để Factory (trong hàm read) hoạt động
 #include "RectangleSVG.h"
 #include "CircleSVG.h"
 #include "EllipseSVG.h"
@@ -30,7 +30,6 @@ private:
     FillSVG fill;
     StrokeSVG stroke;
 
-    // Các cờ đánh dấu xem Group này có set thuộc tính style không
     bool hasFillColor;
     bool hasFillOpacity;
     bool hasStrokeColor;
