@@ -24,6 +24,10 @@ extern POINT panningStart;  // Vị trí chuột lúc bắt đầu kéo
 extern float panningStartX, panningStartY; // Vị trí pan lúc bắt đầu kéo
 extern float curRotate;
 
+// Hỗ trợ cho lấy tâm rotate
+extern float svgWidth;
+extern float svgHeight;
+
 // Biến đọc file RapidXML
 extern ParserSVG fileXML;
 extern vector<char> xmlBuffer;
